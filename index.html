@@ -10,11 +10,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* Changé de center à flex-start */
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
-            background-color: #f0f0f0;
+            overflow: auto; /* Changé de hidden à auto */
+            background-color: #ffffff;
             padding: 20px;
             box-sizing: border-box;
         }
@@ -23,8 +23,8 @@
             position: relative;
             width: 90%;
             max-width: 700vh;
-            height: 80vh;
-            min-height: 300px;
+            height: 80vh; /* Réduit pour laisser de la place au bouton */
+            min-height: 200px; /* Réduit la hauteur minimale */
             border: 2px dashed #333;
             margin-bottom: 20px;
             overflow: hidden;
@@ -59,10 +59,30 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-bottom: 20px; /* Ajout de marge en bas */
+            position: sticky;
+            bottom: 20px; /* Position fixe en bas */
+            z-index: 100; /* S'assure qu'il est au-dessus des autres éléments */
         }
         
         button:hover {
             background-color: #1f1f86;
+        }
+
+        @media (max-width: 768px) {
+            #animation-container {
+                height: 70vh; /* Hauteur réduite sur mobile */
+            }
+            
+            body {
+                padding: 10px 0px 30px; /* Padding réduit sur mobile */
+                justify-content: space-between; /* Meilleure répartition de l'espace */
+            }
+            
+            button {
+                position: relative; /* Retour à un flux normal */
+                bottom: auto;
+            }
         }
     </style>
 </head>
