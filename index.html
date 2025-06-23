@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation Aléatoire Responsive</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        #animation-container {
+            position: relative;
+            width: 90%;
+            max-width: 700vh;
+            height: 80vh;
+            min-height: 300px;
+            border: 2px dashed #333;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .animated-image-container {
+            position: absolute;
+            width: 20vmin;
+            height: 20vmin;
+            opacity: 0;
+            transition: all 0.5s ease-in-out;
+            will-change: transform;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .animated-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #2937b0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #1f1f86;
+        }
+    </style>
+</head>
+<body>
+    <div id="animation-container"></div>
+    <button id="animate-btn">Bien calme</button>
+
+    <script>
+        const container = document.getElementById('animation-container');
+        const animateBtn = document.getElementById('animate-btn');
+        
+        // Liste des images disponibles
+        const images = [
+            'pics/1.png',
+            'pics/2.png',
+            'pics/3.png',
+        ];
+        
+        // Liste des sons disponibles
+        const sounds = [
+            'mp3/1.MP3',
+            'mp3/2.MP3',
+            'mp3/3.MP3',
+            'mp3/4.MP3',
+            'mp3/5.MP3',
+            'mp3/6.MP3'
+        ];
+        
+        // Fonction pour obtenir un élément aléatoire d'un tableau
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+        
+        // Fonction pour jouer un son aléatoire
+        function playRandomSound() {
+            if (sounds.length === 0) return;
+            
+            const soundFile = getRandomElement(sounds);
+            const audio = new Audio(soundFile);
+            audio.play().catch(e => console.log("La lecture automatique a été bloquée:", e));
+        }
+        
+        // Fonction pour générer une position aléatoire en dehors du conteneur
+        function getRandomOutsidePosition(elementWidth, elementHeight) {
+            const side = Math.floor(Math.random() * 4); // 0: haut, 1: droite, 2: bas, 3: gauche
+            
+            let x, y;
+            const margin = 20;
+            
+            switch(side) {
+                case 0: // haut
+                    x = Math.random() * container.offsetWidth;
+                    y = -elementHeight - margin;
+                    break;
+                case 1: // droite
+                    x = container.offsetWidth + margin;
+                    y = Math.random() * container.offsetHeight;
+                    break;
+                case 2: // bas
+                    x = Math.random() * container.offsetWidth;
+                    y = container.offsetHeight + margin;
+                    break;
+                case 3: // gauche
+                    x = -elementWidth - margin;
+                    y = Math.random() * container.offsetHeight;
+                    break;
+            }
+            
+            return { x, y };
+        }
+        
+        // Fonction pour animer une image
+        function animateImage() {
+            // Jouer un son aléatoire
+            playRandomSound();
+            
+            // Créer un conteneur pour l'image
+            const containerImg = document.createElement('div');
+            containerImg.className = 'animated-image-container';
+            
+            // Créer l'image
+            const img = document.createElement('img');
+            img.className = 'animated-image';
+            img.src = getRandomElement(images);
+            img.alt = 'Image animée';
+            
+            // Ajouter l'image au conteneur
+            containerImg.appendChild(img);
+            
+            // Ajouter le conteneur au DOM
+            container.appendChild(containerImg);
+            
+            // Récupérer la taille calculée après l'insertion dans le DOM
+            const containerWidth = containerImg.offsetWidth;
+            const containerHeight = containerImg.offsetHeight;
+            
+            // Position de départ aléatoire (hors écran)
+            const startPos = getRandomOutsidePosition(containerWidth, containerHeight);
+            
+            // Position d'arrivée aléatoire (hors écran, différente de la position de départ)
+            let endPos;
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            do {
+                endPos = getRandomOutsidePosition(containerWidth, containerHeight);
+                attempts++;
+                if (attempts >= maxAttempts) break;
+            } while (Math.abs(endPos.x - startPos.x) < container.offsetWidth/3 || 
+                     Math.abs(endPos.y - startPos.y) < container.offsetHeight/3);
+            
+            // Positionner le conteneur au point de départ
+            containerImg.style.left = `${startPos.x}px`;
+            containerImg.style.top = `${startPos.y}px`;
+            containerImg.style.opacity = '1';
+            
+            // Forcer le recalcul du style pour que la transition fonctionne
+            void containerImg.offsetWidth;
+            
+            // Activer la transition
+            containerImg.style.transition = 'all 2s ease-in-out';
+            
+            // Déplacer vers la position d'arrivée
+            setTimeout(() => {
+                containerImg.style.left = `${endPos.x}px`;
+                containerImg.style.top = `${endPos.y}px`;
+            }, 10);
+            
+            // Supprimer le conteneur après l'animation
+            setTimeout(() => {
+                containerImg.style.opacity = '0';
+                setTimeout(() => {
+                    container.removeChild(containerImg);
+                }, 2000);
+            }, 2000);
+        }
+        
+        // Écouteur d'événement pour le bouton
+        animateBtn.addEventListener('click', animateImage);
+        
+        // Recalculer les positions si la fenêtre est redimensionnée
+        window.addEventListener('resize', () => {
+            // Vous pourriez ajouter ici une logique pour repositionner les images en cours d'animation
+        });
+    </script>
+</body>
+</html>
